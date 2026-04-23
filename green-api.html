@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GREEN-API Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f7f4;
+    --white: #ffffff;
+    --border: #d0ddd0;
+    --border-focus: #25d366;
+    --green: #25d366;
+    --green-dark: #128c4a;
+    --green-light: #e8f8ef;
+    --text: #1a2e1a;
+    --text-dim: #4a6a4a;
+    --text-muted: #90a890;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --radius: 10px;
+    --radius-sm: 7px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 60px;
+  }
+
+  
+  .header {
+    width: 100%;
+    max-width: 960px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .logo {
+    background: var(--green);
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    letter-spacing: 0.4px;
+    flex-shrink: 0;
+  }
+
+  .header-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .header-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  
+  .layout {
+    width: 100%;
+    max-width: 960px;
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  @media (max-width: 680px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  
+  .left {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .block {
+    padding: 16px 18px;
+    border-bottom: 1px solid #eaf0ea;
+  }
+
+  .block:last-child { border-bottom: none; }
+
+  .block-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .block-label::before {
+    content: '';
+    width: 5px; height: 5px;
+    background: var(--green);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  input[type="text"],
+  input[type="url"],
+  textarea {
+    display: block;
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+    margin-bottom: 8px;
+  }
+
+  input[type="text"]:last-of-type,
+  input[type="url"]:last-of-type,
+  textarea { margin-bottom: 0; }
+
+  input[type="text"]:focus,
+  input[type="url"]:focus,
+  textarea:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(37,211,102,0.11);
+    background: #fff;
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: var(--text-muted);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 70px;
+    line-height: 1.55;
+  }
+
+  
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    margin-top: 10px;
+    padding: 9px 14px;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.2px;
+  }
+
+  .btn:hover {
+    border-color: var(--green);
+    color: var(--green-dark);
+    background: var(--green-light);
+  }
+
+  .btn:active { transform: scale(0.985); }
+
+  .btn.loading {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  .spinner {
+    width: 12px; height: 12px;
+    border: 2px solid #cde8d8;
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: none;
+    flex-shrink: 0;
+  }
+
+  .btn.loading .spinner { display: block; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  
+  .right {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 20px;
+  }
+
+  .response-head {
+    padding: 12px 18px;
+    border-bottom: 1px solid #eaf0ea;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .response-head-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .response-head-title .badge-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: var(--green-light);
+    color: var(--green-dark);
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid #b2e8c8;
+  }
+
+  .status-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    background: var(--white);
+    transition: all 0.2s;
+  }
+
+  .status-pill.ok  { color: var(--green-dark); background: var(--green-light); border-color: #b2e8c8; }
+  .status-pill.err { color: #b71c1c; background: #fdf0ef; border-color: #f5c0bc; }
+
+  #response-output {
+    flex: 1;
+    padding: 16px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-y: auto;
+    min-height: 460px;
+    background: transparent;
+    border: none;
+    resize: none;
+    outline: none;
+    color: var(--text-dim);
+  }
+
+  /* JSON syntax colors */
+  .j-key  { color: #0057b8; }
+  .j-str  { color: #2e7d32; }
+  .j-num  { color: #c76a00; }
+  .j-bool { color: #6a1b9a; }
+  .j-null { color: #9e9e9e; }
+
+  .response-foot {
+    padding: 8px 18px;
+    border-top: 1px solid #eaf0ea;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+
+  .method-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .copy-btn:hover { border-color: var(--green); color: var(--green-dark); }
+
+  
+  .page-footer {
+    margin-top: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  .page-footer b { color: var(--green-dark); }
+
+  
+  .toast {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    background: #1a2e1a;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 9px 16px;
+    border-radius: 7px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateY(5px);
+    transition: all 0.22s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+
+<div class="header">
+  <div class="logo">GREEN-API</div>
+  <div class="header-title">WhatsApp API Console</div>
+  <div class="header-sub">test assignment_2026</div>
+</div>
+
+<div class="layout">
+
+  
+  <div class="left">
+
+    
+    <div class="block">
+      <div class="block-label">Параметры инстанса</div>
+      <input type="text" id="idInstance" placeholder="idInstance">
+      <input type="text" id="apiToken"   placeholder="ApiTokenInstance">
+    </div>
+
+    
+    <div class="block">
+      <button class="btn" onclick="callGetSettings(this)">
+        <span class="spinner"></span>
+        getSettings
+      </button>
+    </div>
+
+    
+    <div class="block">
+      <button class="btn" onclick="callGetStateInstance(this)">
+        <span class="spinner"></span>
+        getStateInstance
+      </button>
+    </div>
+
+    
+    <div class="block">
+      <div class="block-label">sendMessage</div>
+      <input type="text" id="chatId"      placeholder="Номер получателя (79991234567)">
+      <textarea        id="messageText"  placeholder="Текст сообщения..."></textarea>
+      <button class="btn" onclick="callSendMessage(this)">
+        <span class="spinner"></span>
+        sendMessage
+      </button>
+    </div>
+
+  
+    <div class="block">
+      <div class="block-label">sendFileByUrl</div>
+      <input type="text" id="fileChatId" placeholder="Номер получателя (79991234567)">
+      <input type="url"  id="fileUrl"    placeholder="https://my.site.com/img/horse.png">
+      <input type="text" id="fileName"   placeholder="Имя файла (horse.png)">
+      <input type="text" id="fileCaption"placeholder="Подпись (необязательно)">
+      <button class="btn" onclick="callSendFileByUrl(this)">
+        <span class="spinner"></span>
+        sendFileByUrl
+      </button>
+    </div>
+
+  </div>
+
+  
+  <div class="right">
+    <div class="response-head">
+      <div class="response-head-title">
+        Ответ:
+        <span class="badge-code">JSON</span>
+      </div>
+      <div class="status-pill" id="statusPill">—</div>
+    </div>
+
+    <textarea id="response-output" readonly>Здесь появится ответ метода...</textarea>
+
+    <div class="response-foot">
+      <span class="method-tag" id="methodTag">// ожидание запроса</span>
+      <button class="copy-btn" onclick="copyResponse()">copy</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-footer"><b>GREEN API</b> © 2026</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const API_BASE = 'https://api.green-api.com';
+
+  
+  function getCreds() {
+    const id    = document.getElementById('idInstance').value.trim();
+    const token = document.getElementById('apiToken').value.trim();
+    if (!id || !token) {
+      setResponse(null, 'Ошибка: заполните idInstance и ApiTokenInstance', 'err');
+      return null;
+    }
+    return { id, token };
+  }
+
+  function phone2chat(raw) {
+    return raw.replace(/\D/g, '') + '@c.us';
+  }
+
+  function setLoading(btn, on) {
+    btn.classList.toggle('loading', on);
+  }
+
+  function syntaxHighlight(json) {
+    if (typeof json !== 'string') json = JSON.stringify(json, null, 2);
+    return json.replace(
+      /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+      m => {
+        let c = 'j-num';
+        if (/^"/.test(m)) c = /:$/.test(m) ? 'j-key' : 'j-str';
+        else if (/true|false/.test(m)) c = 'j-bool';
+        else if (/null/.test(m)) c = 'j-null';
+        return `<span class="${c}">${m}</span>`;
+      }
+    );
+  }
+
+  function setResponse(data, errorText, status, method) {
+    const out   = document.getElementById('response-output');
+    const pill  = document.getElementById('statusPill');
+    const mtag  = document.getElementById('methodTag');
+
+    if (data !== null) {
+      out.innerHTML = syntaxHighlight(data);
+      pill.textContent = '200 OK';
+      pill.className   = 'status-pill ok';
+    } else {
+      out.innerHTML = `<span style="color:#c62828">${errorText || 'Ошибка'}</span>`;
+      pill.textContent = 'ERROR';
+      pill.className   = 'status-pill err';
+    }
+
+    if (method) mtag.textContent = `// ${method}`;
+  }
+
+  
+  async function callGetSettings(btn) {
+    const c = getCreds(); if (!c) return;
+    setLoading(btn, true);
+    try {
+      const r = await fetch(`${API_BASE}/waInstance${c.id}/getSettings/${c.token}`);
+      setResponse(await r.json(), null, 'ok', 'getSettings');
+    } catch(e) {
+      setResponse(null, `Ошибка сети: ${e.message}`, 'err', 'getSettings');
+    }
+    setLoading(btn, false);
+  }
+
+  async function callGetStateInstance(btn) {
+    const c = getCreds(); if (!c) return;
+    setLoading(btn, true);
+    try {
+      const r = await fetch(`${API_BASE}/waInstance${c.id}/getStateInstance/${c.token}`);
+      setResponse(await r.json(), null, 'ok', 'getStateInstance');
+    } catch(e) {
+      setResponse(null, `Ошибка сети: ${e.message}`, 'err', 'getStateInstance');
+    }
+    setLoading(btn, false);
+  }
+
+  async function callSendMessage(btn) {
+    const c     = getCreds(); if (!c) return;
+    const phone = document.getElementById('chatId').value.trim();
+    const msg   = document.getElementById('messageText').value.trim();
+    if (!phone || !msg) {
+      setResponse(null, 'Ошибка: укажите номер и текст сообщения', 'err', 'sendMessage');
+      return;
+    }
+    setLoading(btn, true);
+    try {
+      const r = await fetch(`${API_BASE}/waInstance${c.id}/sendMessage/${c.token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId: phone2chat(phone), message: msg })
+      });
+      setResponse(await r.json(), null, 'ok', 'sendMessage');
+    } catch(e) {
+      setResponse(null, `Ошибка сети: ${e.message}`, 'err', 'sendMessage');
+    }
+    setLoading(btn, false);
+  }
+
+  async function callSendFileByUrl(btn) {
+    const c       = getCreds(); if (!c) return;
+    const phone   = document.getElementById('fileChatId').value.trim();
+    const url     = document.getElementById('fileUrl').value.trim();
+    const name    = document.getElementById('fileName').value.trim() || 'file';
+    const caption = document.getElementById('fileCaption').value.trim();
+    if (!phone || !url) {
+      setResponse(null, 'Ошибка: укажите номер и URL файла', 'err', 'sendFileByUrl');
+      return;
+    }
+    setLoading(btn, true);
+    try {
+      const body = { chatId: phone2chat(phone), urlFile: url, fileName: name };
+      if (caption) body.caption = caption;
+      const r = await fetch(`${API_BASE}/waInstance${c.id}/sendFileByUrl/${c.token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      setResponse(await r.json(), null, 'ok', 'sendFileByUrl');
+    } catch(e) {
+      setResponse(null, `Ошибка сети: ${e.message}`, 'err', 'sendFileByUrl');
+    }
+    setLoading(btn, false);
+  }
+
+  
+  function copyResponse() {
+    const out = document.getElementById('response-output');
+    const txt = out.innerText || out.textContent;
+    if (!txt || txt.startsWith('Здесь')) return;
+    navigator.clipboard.writeText(txt)
+      .then(() => toast('Скопировано!'))
+      .catch(() => {});
+  }
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2000);
+  }
+</script>
+</body>
+</html>
